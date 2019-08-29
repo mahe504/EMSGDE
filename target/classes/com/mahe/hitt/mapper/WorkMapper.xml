@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.mahe.hitt.mapper.WorkMapper">
+
+    <!--
+        获取出勤业务数据
+    -->
+    <select id="selectWorkData" resultType="com.mahe.hitt.entity.Work">
+        select * from work
+    </select>
+
+    <!--
+        查询部门的数量
+    -->
+    <select id="selectDepartmentListCount" resultType="int">
+        select count(*) from department
+    </select>
+    <!--
+        查询部门的列表
+    -->
+    <select id="selectDepartmentList" resultType="com.mahe.hitt.entity.Department">
+        select * from department
+    </select>
+    <!--
+        查询关键row
+    -->
+    <select id="selectWorkDataNumber" resultType="com.mahe.hitt.entity.Turnwork">
+        select turnwork.* from  department , turnwork
+        where dname = #{dname} and turnwork.did = department.id
+    </select>
+</mapper>

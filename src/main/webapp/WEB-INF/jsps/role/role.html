@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>角色管理界面</title>
+    <meta http-equiv="Access-Control-Allow-Origin" content="*">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <script src="../static/path.js"></script>
+    <meta name="format-detection" content="telephone=no">
+    <script src="../static/jquery-1.8.2.min.js"></script>
+    <link rel="stylesheet" href="../layui/css/layui.css" media="all"/>
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_tnyc012u2rlwstt9.css" media="all"/>
+    <script src="../layui/layui.js"></script>
+</head>
+<body class="childrenBody">
+<script type="text/html" id="toolBar">
+    <div class="layui-btn-container">
+        <a class="layui-btn layui-btn-sm layui-btn-normal" id="qu{{d.id}}" lay-event="query">此角色列表</a>
+        <a class="layui-btn layui-btn-sm layui-btn-normal" id="add{{d.id}}" lay-event="add">角色赋予</a>
+        <a class="layui-btn layui-btn-sm layui-btn-warm" id="ed{{d.id}}" lay-event="edit">修改角色信息</a>
+    </div>
+</script>
+<form class="layui-form">
+    <br>
+    <div class="layui-inline">
+        <label class="layui-form-label">角色名称</label>
+        <div class="layui-input-block">
+            <input class="layui-input" id="querygname" name="gname" placeholder="请输入角色名称" type="text">
+        </div>
+    </div>
+    <div class="layui-inline">
+        <a class="layui-btn layui-btn-lg layui-btn-normal" lay-filter="*" lay-submit="">查询</a>
+        <a class="layui-btn layui-btn-lg layui-btn-normal" id="addroleBtn" lay-filter="addroleBtn"
+           lay-submit="">注册角色
+        </a>
+        <a class="layui-btn layui-btn-lg layui-btn-normal" lay-filter="rufh" lay-submit="">刷新</a>
+    </div>
+</form>
+<table id="role" lay-filter="role"></table>
+</body>
+<script type="text/javascript">
+    layui.config({//基础目录
+        base: getRootPath() + '/static/common/js/'//定义基目录
+    }).extend({
+        $tool: 'tool',
+        $api: 'api',
+        ajaxAOP: 'ajaxAOP',
+    }).use(['form', 'layer', '$tool', '$api', 'ajaxAOP', 'table', 'laypage', 'jquery', 'element'], function () {
+        var form = layui.form,
+            layer = parent.layer === 'undenfined' ? layui.layer : parent.layer,
+            $tool = layui.$tool,
+            $api = layui.$api,
+            ajaxAOP = layui.ajaxAOP,
+            table = layui.table,
+            pageNum = 0,
+            dataLength = 0,
+            laypage = layui.laypage,
+            jquery = layui.jquery,
+            element = layui.element;
+
+        var tableIns = table.render({
+            elem: '#role',
+            height: '390',
+            url: getRootPath() + "/man/selectRole.action",
+            limit: 5,
+            totalRow: true,
+            limits: [5, 10, 15, 20, 25, 30],
+            page: {
+                prev: '上一页',
+                next: '下一页',
+                layout: ['prev', 'page', 'next', 'limit', 'count', 'refresh', 'skip']
+            }
+            , title: '员工列表'
+            , autoSort: false
+            , page: true
+            , cols: [[
+                {field: 'id', title: 'ID', width: '6%'}
+                , {field: 'gname', title: '角色名称'}
+                , {field: 'gcode', title: '角色代号'}
+                , {field: 'gcount', title: '在职人数'}
+                , {fixed: 'right', title: '操作', align: 'center', width: '25%', toolbar: '#toolBar'}
+            ]],
+            done: function (res, curr, count) {
+                /*
+                *   页面刷新的时候重新计算页面的数据
+                * */
+                var brforeCurr = curr; // 获得当前页码
+                var dataLength = res.data.length; // 获得当前页的记录数
+                var count = res.count; // 获得总记录数
+                if (dataLength == 0 && count != 0) { //如果当前页的记录数为0并且总记录数不为0
+                    table.reload("role", { // 刷新表格到上一页
+                        page: {
+                            curr: brforeCurr - 1
+                        }
+                    });
+                }
+            }
+        });
+        form.on('submit(*)', function (obj) {
+            tableIns.reload({
+                where: {
+                    'gname': obj.field.gname,
+                }
+            });
+            return false;
+        });
+        form.on('submit(rufh)', function () {
+            tableIns.reload();
+        });
+        form.on('submit(addroleBtn)', function (obj) {
+            layer.open({
+                skin: 'layui-layer-lan', //样式类名
+                closeBtn: 2, //不显示关闭按钮
+                anim: 5,
+                shadeClose: true,
+                method: 'post',
+                shade: 0.8, //开启遮罩关闭
+                title: '添加角色',
+                maxmin: true, //开启最大化最小化按钮
+                area: ['400px', '250px'],
+                type: 2,
+                content: getRootPath() + '/page/man/addrole.html',
+                success: function (layero) {
+                    layero.find('.layui-layer-min').remove();
+                },
+                cancel: function (index, layero) {//点击关闭事件
+                    tableIns.reload();
+                },
+                end: function () {
+                    tableIns.reload();
+                }
+            });
+        });
+
+        table.on('tool(role)', function (obj) {
+            switch (obj.event) {
+                case 'edit':
+                    editRole(obj.data);
+                    break;
+                case 'delete':
+                    deleteRole(obj.data);
+                    break;
+                case 'query':
+                    queryRole(obj.data);
+                    break;
+                case 'add':
+                    addgroup(obj.data);
+                    break;
+            }
+        });
+
+        function addgroup(data){
+            layer.open({
+                skin: 'layui-layer-lan', //样式类名
+                closeBtn: 2, //不显示关闭按钮
+                anim: 5,
+                shadeClose: true,
+                shade: 0.8, //开启遮罩关闭
+                title: '其他职位列表',
+                maxmin: true, //开启最大化最小化按钮
+                area: ['1000px', '520px'],
+                type: 2,
+                content: getRootPath() + '/page/man/addgroup.html?id='+data.id,
+                success: function (layero) {
+                    layero.find('.layui-layer-min').remove();
+                },
+                cancel: function (index, layero) {//点击关闭事件
+                    tableIns.reload();
+                },
+                end: function () {
+                    tableIns.reload();
+                }
+            });
+        }
+
+        function queryRole(data) {
+            var gname = data.gname;
+            var id = data.id;
+            layer.open({
+                skin: 'layui-layer-lan', //样式类名
+                closeBtn: 2, //不显示关闭按钮
+                anim: 5,
+                shadeClose: true,
+                shade: 0.8, //开启遮罩关闭
+                title: gname + '列表',
+                maxmin: true, //开启最大化最小化按钮
+                area: ['1000px', '520px'],
+                type: 2,
+                content: getRootPath() + '/page/man/showroleasuser.html?id=' + id,
+                success: function (layero) {
+                    layero.find('.layui-layer-min').remove();
+                },
+                cancel: function (index, layero) {//点击关闭事件
+                    tableIns.reload();
+                },
+                end: function () {
+                    tableIns.reload();
+                }
+            });
+        }
+
+        function editRole(data) {
+            layer.open({
+                skin: 'layui-layer-lan', //样式类名
+                closeBtn: 2, //不显示关闭按钮
+                anim: 5,
+                shadeClose: true,
+                method: 'post',
+                shade: 0.8, //开启遮罩关闭
+                title: '修改角色信息',
+                maxmin: true, //开启最大化最小化按钮
+                area: ['400px', '250px'],
+                type: 2,
+                content: getRootPath() + '/page/man/editrole.html?id=' + data.id,
+                success: function (layero) {
+                    layero.find('.layui-layer-min').remove();
+                },
+                cancel: function (index, layero) {//点击关闭事件
+                    tableIns.reload();
+                },
+                end: function () {
+                    tableIns.reload();
+                }
+            });
+        }
+
+        function deleteRole(data) {
+            layer.confirm('你确认要删除吗', function (confirmIndex) {
+                layer.load();
+                var req = {
+                    id: data.id,
+                };
+                $api.doPost(getRootPath() + "/man/deleteRoleById.action", req, function (result) {
+                    if (result) {
+                        layer.closeAll("loading");
+                        layer.msg('删除成功', {time: 1000}, function () {
+                            /*if (dataLength == 1) {
+                                table.reload('admin', {page: {curr: pageNum > 1 ? (pageNum - 1) : 1}});
+                            } else {
+                                table.reload('admin', {page: {curr: pageNum}});
+                            }*/
+                            tableIns.reload();
+                        });
+                    } else {
+                        layer.closeAll("loading");
+                        layer.msg('删除失败', {time: 1000});
+                    }
+                });
+            });
+        }
+    });
+</script>
+</html>

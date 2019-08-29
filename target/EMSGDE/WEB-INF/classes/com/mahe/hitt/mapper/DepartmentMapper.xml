@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.mahe.hitt.mapper.DepartmentMapper">
+
+    <!--<resultMap id="departmentCountMap" type="com.mahe.hitt.entity.Department">
+        <id property="id" column="id"></id>
+        <result property="createuser" column="createuser"></result>
+        <result property="dname" column="dname"></result>
+        <result property="dtabletime" column="dtabletime"></result>
+        <result property="updateuser" column="updateuser"></result>
+        <result property="updatetime" column="updatetime"></result>
+        <result property="usercount" column="usercount"></result>
+    </resultMap>-->
+    <!--
+        sql片段
+    -->
+    <sql id="selectDepartmentSql">
+        <where>
+           id !=1000
+            <if test="dname!='' and dname != null">
+                <bind name="dnameItem" value="'%'+dname+'%'"></bind>
+                and dname like #{dnameItem}
+            </if>
+            <if test="createuser!='' and createuser!= null">
+                <bind name="createuserItem" value="'%'+createuser+'%'"></bind>
+                and createuser like #{createuserItem}
+            </if>
+        </where>
+    </sql>
+
+    <!--
+        修改部门信息的sql片段  trim能删除最后面的,
+    -->
+    <sql id="updateDepartmentSql">
+        <trim prefix="set" suffixOverrides=",">
+            <if test="dname!='' and dname != null">
+                dname = #{dname},
+            </if>
+            <if test="maxnumber!='' and maxnumber != null">
+               maxnumber = #{maxnumber},
+            </if>
+        </trim>
+    </sql>
+
+    <!--
+        SQL片段
+    -->
+    <sql id="selectDepartmentAllUserSql">
+        <where>
+            <if test="did !='' and did != null">
+             and  did = #{did}
+            </if>
+            <if test="username != '' and username != null">
+                <bind name="usernameItem" value="'%'+username+'%'"/>
+                and username = #{usernameItem}
+            </if>
+
+        </where>
+    </sql>
+    <!--
+        查询全部的部门
+    -->
+    <select id="selectDepartmentList" resultType="com.mahe.hitt.entity.Department">
+        select * from department
+        <include refid="selectDepartmentSql"></include>
+        limit #{start} , #{end}
+    </select>
+
+    <!--
+        查询部门的数量
+    -->
+    <select id="selectDepartmentListCount" resultType="int">
+        select count(*) from department
+        <include refid="selectDepartmentSql"></include>
+    </select>
+
+    <!--
+        查询每个部门的人数
+    -->
+    <select id="selectDepartmentUserCount" resultType="int">
+        select count(*) from user where did = #{id}
+    </select>
+
+    <!--
+        删除关于某个部门的全部信息包括在这个部门的员工
+    -->
+    <delete id="deleteDePartmentById">
+        delete from department where department.id = #{id}
+    </delete>
+    <update id="deleteDePartmentUsersByDid">
+        update user set did = null where did = 1000
+    </update>
+
+    <!--
+        根据id查找部门
+    -->
+    <select id="selectDepartmentById" resultType="com.mahe.hitt.entity.Department">
+        select * from department where id = #{id}
+    </select>
+
+    <!--
+        根据id修改部门信息
+    -->
+    <update id="updateDepartmentById">
+        update department <include refid="updateDepartmentSql"></include> , updatetime = now() , updateuser =
+        #{updateuser} where id = #{id}
+    </update>
+
+    <!--
+        查询某个部门的所有员工
+    -->
+    <select id="selectDepartmentAllUserByDid" resultType="com.mahe.hitt.entity.User">
+        select * from user
+        <include refid="selectDepartmentAllUserSql"></include>
+        limit #{start} , #{end}
+    </select>
+
+    <!--
+        查询某个部门员工的数量
+    -->
+    <select id="selectDepartmentAllUserCount" resultType="int">
+        select count(*) from user
+        <include refid="selectDepartmentAllUserSql"></include>
+    </select>
+
+    <!--
+        开除员工did
+    -->
+    <update id="updateDepartmentUserByUid">
+        update user set did = 1000 where  uid = #{uid}
+    </update>
+
+    <!--
+        添加部门
+    -->
+    <insert id="addDepartment" useGeneratedKeys="true">
+        insert into department(dname , createuser , dtabletime , updateuser , updatetime , maxnumber)
+        values(#{dname} , #{username} , now() , #{username} , now() , #{maxnumber})
+    </insert>
+
+    <!--
+           查看部门是否添加
+    -->
+    <select id="selectDepartmentByDname" resultType="com.mahe.hitt.entity.Department">
+        select * from department where dname = #{dname}
+    </select>
+</mapper>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.mahe.hitt.mapper.MeunMapper">
+    <select id="selectMeunBypermissionId" resultType="com.mahe.hitt.entity.Meun">
+        select m.* from meun as m, permission as p , meun_permission as mp
+        where m.menuid = mp.mid and mp.pid = p.id and p.id = #{id} and mp.mptype = 'meun'
+    </select>
+</mapper>

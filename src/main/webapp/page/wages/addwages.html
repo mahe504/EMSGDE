@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>添加工资等级页面</title>
+    <meta http-equiv="Access-Control-Allow-Origin" content="*">
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <script src="../static/path.js"></script>
+    <meta name="format-detection" content="telephone=no">
+    <script src="../static/jquery-1.8.2.min.js"></script>
+    <link rel="stylesheet" href="../layui/css/layui.css" media="all"/>
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_tnyc012u2rlwstt9.css" media="all"/>
+    <script src="../layui/layui.js"></script>
+</head>
+<body class="childrenBody" style="background:#fbfbfb">
+<br>
+<div class="layui-form-item" style="margin-left:30%; margin-top:40px; width: 400px; height:200px; ">
+    <form class="layui-form layui-form-pane1" action="" lay-filter="editdepartment">
+        <input type="hidden" name="id"/>
+        <div class="layui-form-item" style="width:60%;">
+            <label class="layui-form-label"><b>工资等级名称</b></label>
+            <div class="layui-input-block">
+                <input id="lvInput" type="text" name="lv" lay-verify="required"
+                       placeholder="请输入等级名称" autocomplete="off" class="layui-input"/>
+            </div>
+        </div>
+        <div class="layui-form-item" style="width:50%;">
+            <label class="layui-form-label"><b>工资</b></label>
+            <div class="layui-input-block">
+                <input id="wnumberInput" type="text" name="wnumber" lay-verify="required|number"
+                       placeholder="工资"
+                       autocomplete="off" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item" style="margin-left: -20px ; margin-top: 40px;">
+            <div class="layui-input-block">
+                <!--<input class="layui-btn layui-btn-disabled" disabled type="submit" layui-event="editUser"
+                       value="立即提交"/>-->
+                <button lay-submit id="submit" class="layui-btn " lay-filter="*">立即提交
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+</body>
+<script type="text/javascript" src="../static/main/js/addwages.js"></script>
+</html>

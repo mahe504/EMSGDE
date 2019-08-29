@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.mahe.hitt.mapper.WagesMapper">
+
+    <!--
+        sql片段
+    -->
+    <sql id="wagesSql">
+        <where>
+            <if test="lv!='' and lv!=null">
+                <bind value="'%'+lv+'%'" name="lvItem"></bind>
+                lv like #{lvItem}
+            </if>
+        </where>
+    </sql>
+    <!--
+        查询全部的工资等级
+    -->
+    <select id="selectWagesAll" resultType="com.mahe.hitt.entity.Wages">
+        select * from wages
+        <include refid="wagesSql"></include>
+        limit #{start} , #{end}
+    </select>
+    <!--
+        查询全部工资等级的数量
+    -->
+    <select id="selectWagesAllCount" resultType="int">
+        select count(*) from wages
+        <include refid="wagesSql"></include>
+    </select>
+
+    <!--
+        删除工资等级id
+    -->
+    <delete id="deleteWagesById">
+        delete from wages where id = #{id}
+    </delete>
+
+    <!--
+        查询工资名称
+    -->
+    <select id="selectWagesByLv" resultType="com.mahe.hitt.entity.Wages">
+        select * from wages where lv = #{lv}
+    </select>
+
+    <!--
+        添加工资
+    -->
+    <insert id="insertWages">
+        insert into wages(lv , wnumber) values(#{lv} , #{wnumber})
+    </insert>
+
+    <!--
+        修改工资等级
+    -->
+    <update id="updateWagesById">
+        update wages set lv = #{lv} , wnumber = #{wnumber} where id = #{id}
+    </update>
+
+    <!--
+        根据id查询工资等级信息
+    -->
+    <select id="selectWagesById" resultType="com.mahe.hitt.entity.Wages">
+        select * from wages where id = #{id}
+    </select>
+</mapper>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.mahe.hitt.mapper.RegistMapper">
+    <select id="selectUserByUsername" resultType="com.mahe.hitt.entity.User">
+        select * from user where username=#{username}
+    </select>
+    <insert id="insertUser" parameterType="com.mahe.hitt.entity.User" keyProperty="uid" >
+        insert into user(
+            uid,email,username,password,gender,birthday,address,phone,ecode,status,createtime,realname,did,wagesid
+        )values(
+            #{uid},#{email},#{username},#{password},#{gender},#{birthday},#{address},
+            #{phone},#{ecode},#{status},#{createtime},#{realname},#{did},1
+        )
+    </insert>
+</mapper>

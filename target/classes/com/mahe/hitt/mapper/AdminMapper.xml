@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.mahe.hitt.mapper.AdminMapper">
+
+    <!--
+        公用的sql片段
+    -->
+    <sql id="adminSql">
+        <where>
+            u.uid = ur.uid and ur.rid = r.id and r.rcode = 'admin'
+            <if test="username!=''">
+                <bind name="item" value="'%'+username+'%'"/>
+                and username like #{item}
+            </if>
+        </where>
+    </sql>
+
+    <!--
+        查询不是管理员的sql片段
+    -->
+    <sql id="userNoAdminSql">
+        <if test="username!=''">
+            <bind name="usernameItem" value="'%'+username+'%'"/>
+            and username like #{usernameItem}
+        </if>
+    </sql>
+    <!--
+        查询所有admin管理员
+    -->
+    <select id="selectAdminAll" resultType="com.mahe.hitt.entity.User">
+        select u.* from user as u , role as r , user_role as ur
+        <include refid="adminSql"></include>
+        limit #{start},#{end}
+    </select>
+
+    <!--
+        查询所有管理员的数量
+    -->
+    <select id="selectAdminAllCount" resultType="int" parameterType="string">
+        select count(*) from user as u , role as r , user_role as ur
+        <include refid="adminSql"></include>
+    </select>
+
+    <!--
+        修改管理员的状态
+    -->
+    <update id="updateAdminStatusByUid">
+        update user set status = #{status} where uid = #{uid}
+    </update>
+
+    <!--
+        删除管理员
+    -->
+    <delete id="deleteAdminByUid">
+        delete from user_role where uid = #{uid}
+    </delete>
+
+    <!--
+        查询不是管理员的用户
+    -->
+    <select id="selectUserNoAdmin" resultType="com.mahe.hitt.entity.User">
+        select u.* from user as u where uid not in (select ur.uid from user_role as ur)
+        <include refid="userNoAdminSql"></include>
+        limit #{start},#{end}
+    </select>
+
+    <!--
+        查询不是管理员的用户的数量
+    -->
+    <select id="selectUserNoAdminCount" resultType="int">
+        select count(*) from user as u where uid not in (select ur.uid from user_role as ur)
+        <include refid="userNoAdminSql"></include>
+    </select>
+
+    <!--
+        添加管理员按uid
+    -->
+    <insert id="insertAdminByUid" useGeneratedKeys="true">
+        insert into user_role(uid , rid) values(#{uid} , 3)
+    </insert>
+</mapper>

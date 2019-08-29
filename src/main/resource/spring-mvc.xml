@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xsi:schemaLocation="http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.3.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.3.xsd">
+
+    <!-- 开启注解模式 -->
+    <context:annotation-config></context:annotation-config>
+    <!-- 开启扫描包的模式 -->
+    <context:component-scan base-package="com.mahe"
+                            use-default-filters="false">
+        <context:include-filter type="annotation"
+                                expression="org.springframework.stereotype.Controller"/>
+        <context:include-filter type="annotation"
+                                expression="org.springframework.web.bind.annotation.ControllerAdvice"/>
+    </context:component-scan>
+    <!--开启代理 -->
+    <aop:aspectj-autoproxy proxy-target-class="true"></aop:aspectj-autoproxy>
+    <!-- 开启注解的集合 -->
+    <mvc:annotation-driven
+            conversion-service="conversionService">
+        <mvc:message-converters>
+            <!--返回字符串防止乱码-->
+            <bean class="org.springframework.http.converter.StringHttpMessageConverter">
+                <property name="supportedMediaTypes">
+                    <list>
+                        <value>text/plain;charset=UTF-8</value>
+                        <value>text/html;charset=UTF-8</value>
+                    </list>
+                </property>
+            </bean>
+            <!--返回json时候转换-->
+            <bean class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
+                <property name="supportedMediaTypes">
+                    <list>
+                        <value>application/json;charset=UTF-8</value>
+                        <value>text/html;charset=UTF-8</value>
+                        <value>application/x-www-form-urlencoded;charset=UTF-8</value>
+                    </list>
+                </property>
+            </bean>
+        </mvc:message-converters>
+    <!--开启注解-->
+    </mvc:annotation-driven>
+    <!--放行静态资源-->
+    <mvc:default-servlet-handler/>
+    <!-- 处理器映射器 -->
+    <bean
+            class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping"></bean>
+    <!-- 处理器适配器 -->
+    <bean
+            class="org.springframework.web.servlet.mvc.SimpleControllerHandlerAdapter"></bean>
+    <!-- 視圖解析器 -->
+    <bean
+            class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="prefix" value="/WEB-INF/jsps/"></property>
+        <property name="suffix" value=".jsp"></property>
+    </bean>
+
+    <!-- 异常 -->
+    <!--<bean
+            class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">
+        <property name="exceptionAttribute" value="ex"></property>
+        <property name="exceptionMappings">
+            <props>
+                <prop key="org.apache.shiro.authc.UnknownAccountException">/error/unknowerror</prop>
+                <prop key="org.apache.shiro.authc.LockedAccountException">/error/suodingerror</prop>
+                &lt;!&ndash; <prop key="org.apache.shiro.authz.UnauthorizedException">unauthorized</prop>
+                <prop key="org.apache.shiro.authz.UnauthenticatedException">login</prop> &ndash;&gt;
+            </props>
+        </property>
+    </bean>-->
+    <!-- 自定义类型转换器 -->
+    <bean
+            class="org.springframework.format.support.FormattingConversionServiceFactoryBean"
+            id="conversionService"></bean>
+    <!-- 自定义视图转换器 -->
+    <bean
+            class="org.springframework.web.servlet.view.BeanNameViewResolver"></bean>
+    <!-- 验证 -->
+    <bean
+            class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean"></bean>
+    <!-- shiro生命周期方法 -->
+    <bean class="org.apache.shiro.spring.LifecycleBeanPostProcessor"
+          id="lifecycleBeanPostProcessor"></bean>
+    <bean
+            class="org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator"
+            depends-on="lifecycleBeanPostProcessor">
+    </bean>
+    <bean
+            class="org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor">
+        <property name="securityManager" ref="securityManager"></property>
+    </bean>
+    <mvc:interceptors>
+        <mvc:interceptor>
+            <mvc:mapping path="/**"/>
+            <mvc:exclude-mapping path="/login/login.action"/>
+            <mvc:exclude-mapping path="/regist/registUser.action"/>
+            <mvc:exclude-mapping path="/WEB-INF/jsps/main/**"/>
+            <bean class="com.mahe.hitt.interceptor.Logininterceptor"></bean>
+        </mvc:interceptor>
+    </mvc:interceptors>
+</beans>

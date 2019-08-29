@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.3.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.3.xsd">
+
+    <!-- 开启注解 -->
+    <context:annotation-config></context:annotation-config>
+    <!-- 开启扫描包模式 -->
+    <context:component-scan base-package="com.mahe">
+        <context:exclude-filter type="annotation"
+                                expression="org.springframework.stereotype.Controller"/>
+    </context:component-scan>
+    <!-- 开启扫描外部配置文件 -->
+    <bean class="org.springframework.context.support.PropertySourcesPlaceholderConfigurer">
+        <property name="locations">
+            <list>
+                <value>classpath:db.properties</value>
+            </list>
+        </property>
+    </bean>
+    <!-- 连接数据库连接池 -->
+    <bean class="com.alibaba.druid.pool.DruidDataSource" id="dataSource">
+        <property name="url" value="${jdbc.url}"></property>
+        <property name="username" value="${jdbc.username}"></property>
+        <property name="password" value="${jdbc.password}"></property>
+        <property name="driverClassName" value="${jdbc.driverClassName}"></property>
+    </bean>
+    <!-- 事务的配置 -->
+    <bean
+            class="org.springframework.jdbc.datasource.DataSourceTransactionManager"
+            id="transactionManager">
+        <property name="dataSource" ref="dataSource"></property>
+    </bean>
+    <tx:advice transaction-manager="transactionManager"
+               id="adviceManager">
+        <tx:attributes>
+            <tx:method name="*" propagation="REQUIRED"/>
+        </tx:attributes>
+    </tx:advice>
+    <aop:config>
+        <aop:pointcut
+                expression="execution(* com.mahe.hitt.*.service.impl.*.*(..))" id="pc"/>
+        <aop:advisor advice-ref="adviceManager" pointcut-ref="pc"/>
+    </aop:config>
+    <!-- 整合mybatis -->
+    <bean class="org.mybatis.spring.SqlSessionFactoryBean"
+          id="sqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"></property>
+        <property name="configLocation"
+                  value="classpath:mybatis-config.xml"></property>
+        <property name="mapperLocations"
+                  value="classpath:com/mahe/hitt/mapper/*.xml"></property>
+    </bean>
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property
+                name="basePackage" value="com.mahe.hitt.mapper"></property>
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactoryBean"></property>
+    </bean>
+    <!--<mybatis-spring:scan base-package="com.mahe.hitt.mapper"/>-->
+    <!-- shiro的核心bean配置 -->
+    <bean class="org.apache.shiro.web.mgt.DefaultWebSecurityManager"
+          id="securityManager">
+        <property name="cacheManager" ref="cacheManager"></property>
+        <property name="sessionManager" ref="sessionManager"></property>
+        <!-- <property name="realm" ref="loginRealm"></property> -->
+        <!-- 一定要配置到realm的前面 -->
+        <property name="authenticator" ref="authenticator"></property>
+        <property name="authorizer" ref="authorizer"></property>
+        <!--<property name="rememberMeManager" value="7"></property>-->
+        <property name="realms">
+            <list>
+                <ref bean="loginRealm"/>
+            </list>
+        </property>
+    </bean>
+    <bean class="org.apache.shiro.authz.ModularRealmAuthorizer" id="authorizer">
+        <property name="realms">
+            <ref bean="loginRealm"/>
+        </property>
+    </bean>
+    <!-- 配置sessionManager -->
+    <bean class="org.apache.shiro.web.session.mgt.DefaultWebSessionManager"
+          id="sessionManager">
+        <!--<property name="sessionDAO">
+            <bean class="org.apache.shiro.session.mgt.eis.MemorySessionDAO"></bean>
+        </property>-->
+        <property name="sessionIdUrlRewritingEnabled" value="false"></property>
+        <property name="sessionValidationSchedulerEnabled" value="true"></property>
+        <property name="sessionIdCookieEnabled" value="true"/>
+        <property name="sessionIdCookie" ref="simpleCookie"/>
+        <property name="cacheManager" ref="cacheManager"></property>
+        <property name="globalSessionTimeout" value="216000000000"></property>
+    </bean>
+    <bean id="simpleCookie" class="org.apache.shiro.web.servlet.SimpleCookie">
+        <property name="name" value="JSESSID" />
+        <!--<constructor-arg name="name" value="shiro.sesssion"/>-->
+        <property name="httpOnly" value="true"/>
+        <property name="maxAge" value="-1"/>
+        <property name="path" value="/"/>
+    </bean>
+    <bean class="org.springframework.web.multipart.commons.CommonsMultipartResolver" id="multipartResolver">
+        <property name="defaultEncoding" value="utf-8"></property>
+        <property name="maxUploadSize" value="10485760"></property>
+
+    </bean>
+    <!-- 配置缓存的bean -->
+    <bean class="org.apache.shiro.cache.ehcache.EhCacheManager"
+          id="cacheManager">
+        <property name="cacheManagerConfigFile"
+                  value="classpath:ehcache.xml"></property>
+    </bean>
+    <!-- 配置shiroRealm的realm -->
+    <bean class="com.mahe.hitt.realms.LoginRealm" id="loginRealm">
+        <property name="credentialsMatcher">
+            <bean class="org.apache.shiro.authc.credential.HashedCredentialsMatcher">
+                <property name="hashAlgorithmName" value="MD5"></property>
+                <property name="hashIterations" value="1024"></property>
+            </bean>
+        </property>
+    </bean>
+    <!-- 配置realm验证的策略 -->
+    <bean class="org.apache.shiro.authc.pam.ModularRealmAuthenticator"
+          id="authenticator">
+        <property name="authenticationStrategy">
+            <bean class="org.apache.shiro.authc.pam.FirstSuccessfulStrategy"></bean>
+        </property>
+    </bean>
+    <!-- 安全检查 -->
+    <bean
+            class="org.apache.shiro.spring.remoting.SecureRemoteInvocationExecutor">
+        <property name="securityManager" ref="securityManager"></property>
+    </bean>
+    <!-- 配置shiro的过滤器 -->
+    <bean class="org.apache.shiro.spring.web.ShiroFilterFactoryBean"
+          id="shiroFilter">
+        <property name="loginUrl" value="/index.jsp"></property>
+        <property name="securityManager" ref="securityManager"></property>
+        <property name="successUrl" value="/main"></property>
+        <property name="unauthorizedUrl" value="/error/unauthorized.jsp"></property>
+      <!--  <property name="filters">
+            <map>
+                <entry key="logout/logout.action" value-ref="systemLogoutFilter"></entry>
+            </map>
+        </property>-->
+        <!-- <property name="filterChainDefinitionMap" ref="filtetChainDefinitionMap"></property>-->
+        <property name="filterChainDefinitions">
+            <value>
+                /login/login.action=anon
+                /regist/*.action=anon
+                /page/**=anon
+                /regist/**=anon
+                /static/**/**/**=anon
+                /layui/**/**/**=anon
+                /image/**=anon
+                /**=authc
+                /**=user
+            </value>
+        </property>
+    </bean>
+    <!--<bean class="com.mahe.hitt.factory.FilterChainDefinitionMapFactory" id="filtetChainDefinitionMapFactory"></bean>
+    <bean id="filtetChainDefinitionMap" factory-bean="filtetChainDefinitionMapFactory"
+          factory-method="getfilterChainDefinitionMap"></bean>-->
+</beans>

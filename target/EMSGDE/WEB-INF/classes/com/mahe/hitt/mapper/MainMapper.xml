@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.mahe.hitt.mapper.MainMapper">
+
+    <!--
+        返回系统登录的信息
+    -->
+    <select id="selectLoginlogInfo" resultType="com.mahe.hitt.entity.Loginlog">
+        select * from loginlog
+        <include refid="loginlogSql"></include>
+        limit #{start},#{end}
+    </select>
+    <!--
+        查询登录信息的总条数
+    -->
+    <select id="selectLoginlogCount" resultType="int">
+        select count(*) from loginlog
+        <include refid="loginlogSql"></include>
+    </select>
+    <!--
+        sql片段根据logusername来查询
+    -->
+    <sql id="loginlogSql">
+        <where>
+            <if test="logusername!='' and logusername!=null">
+                <bind name="logusernameItem" value="'%'+logusername+'%'"/>
+                logusername like #{logusernameItem}
+            </if>
+        </where>
+    </sql>
+    <!--
+        按照id删除对应的登陆日志
+    -->
+    <delete id="deleteLoginlogById">
+        delete from loginlog where id = #{id}
+    </delete>
+</mapper>

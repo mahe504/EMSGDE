@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.mahe.hitt.mapper.ManagerMapper">
+
+    <!--
+        查询角色的sql片段
+    -->
+    <sql id="roleSql">
+        <where>
+            <if test="gname!='' and gname!=null">
+                <bind name="gnameItem" value="'%'+gname+'%'"></bind>
+                gname like #{gnameItem}
+            </if>
+        </where>
+    </sql>
+
+    <!--
+        查询角色
+    -->
+    <select id="selectRole" resultType="com.mahe.hitt.entity.Group">
+        select * from `group`
+        <include refid="roleSql"></include>
+        limit #{start} , #{end}
+    </select>
+
+    <!--
+        查询角色用户的人数
+    -->
+    <select id="selectRoleAsUserCount" resultType="int">
+        select count(*) from user_group where gid = #{id}
+    </select>
+
+    <!--
+        查询角色的数量
+    -->
+    <select id="selectRoleCount" resultType="int">
+        select count(*) from `group`
+        <include refid="roleSql"></include>
+    </select>
+
+    <!--
+        删除角色信息
+    -->
+    <delete id="deleteRoleById">
+        delete from `group` where id = #{id}
+    </delete>
+
+    <!--  删除角色对应的权限
+  <delete id="deleteRoleAsPermissionByRid">
+      delete from role_permission where rid = #{id}
+  </delete>-->
+
+
+    <!--
+        角色信息sql片段
+    -->
+    <sql id="selectRoleInfoSql">
+        <where>
+            <if test="gname!='' and gname!=null">
+                gname = #{gname}
+            </if>
+            <if test="gcode!='' and gcode!=null">
+                and gcode = #{gcode}
+            </if>
+        </where>
+    </sql>
+    <!--
+        查询角色信息是否存在
+    -->
+    <select id="selectRoleInfo" resultType="com.mahe.hitt.entity.Group">
+        select * from `group`
+        <include refid="selectRoleInfoSql"></include>
+    </select>
+
+    <!--
+        添加角色
+    -->
+    <insert id="insertRole" useGeneratedKeys="true">
+        insert into `group` (gname , gcode , pid ) values(#{gname} , #{gcode} , 0)
+    </insert>
+
+    <!--
+       修改角色信息
+    -->
+    <update id="updateRoleById">
+        update `group` set gname = #{gname} , gcode = #{gcode} where id=#{id}
+    </update>
+
+    <!--
+        查询某个id的角色信息
+    -->
+    <select id="selectRoleById" resultType="com.mahe.hitt.entity.Group">
+        select * from `group` where id = #{id}
+    </select>
+
+    <!--
+        查询某个角色对应的列表
+    -->
+    <select id="selectManagerAllUser" resultType="com.mahe.hitt.entity.User">
+        select u.* from user as u, user_group as ug where u.uid = ug.uid and ug.gid = #{gid}
+        <if test="username!='' and user!=null">
+            <bind name="usernameItem" value="'%'+username+'%'"></bind>
+            and username like #{usernameItem}
+        </if>
+        limit #{start} , #{end}
+    </select>
+
+    <!--
+        查询某个角色对应的列表的数量
+    -->
+    <select id="selectManagerAllUserCount" resultType="int">
+        select count(*) from user as u, user_group as ug where u.uid = ug.uid and ug.gid = #{gid}
+        <if test="username!='' and user!=null">
+            <bind name="usernameItem" value="'%'+username+'%'"></bind>
+            and username like #{usernameItem}
+        </if>
+    </select>
+
+    <!--
+        卸任
+    -->
+    <delete id="deleteGroupByUid">
+        delete from user_group where uid = #{uid}
+    </delete>
+
+    <!--
+        查找不是某个角色的员工列表
+    -->
+    <select id="selectManagerAllUserNoGroup" resultType="com.mahe.hitt.entity.povo.UserGroupDepartmentPovo">
+        select u.uid , dname , did  ,  gname , realname , username from `user` as u , user_group as ug, `group` as g , department as d
+            where u.uid = ug.uid and ug.gid = g.id and u.did = d.id and gid != #{id}
+        limit #{start} , #{end}
+    </select>
+
+    <!--
+        查找不是某个角色的员工列表的数量
+    -->
+    <select id="selectManagerAllUserNoGroupCount" resultType="int">
+        select count(*) from `user` as u , user_group as ug, `group` as g , department as d
+            where u.uid = ug.uid and ug.gid = g.id and u.did = d.id and gid != #{id}
+    </select>
+
+    <!--
+        修改员工的角色
+    -->
+    <update id="updateGroupById">
+        update user_group set gid = #{gid} where uid = #{uid}
+    </update>
+</mapper>

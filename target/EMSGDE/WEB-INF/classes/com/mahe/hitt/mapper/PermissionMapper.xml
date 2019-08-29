@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.mahe.hitt.mapper.PermissionMapper">
+    <!--
+        根据你的角色查出你的权限
+    -->
+    <select id="selectPermissionByRolecode" resultType="com.mahe.hitt.entity.Permission">
+        select p.* from permission as p , role as r  , role_permission as rp
+        where p.id = rp.pid and r.id = rp.rid and r.rcode = #{rcode}
+    </select>
+
+    <!--
+        根据你的角色和页面查出对应的按钮权限
+    -->
+    <select id="selectPermissionBtn" resultType="com.mahe.hitt.entity.Meun">
+        select m.* from meun as m , meun_permission as mp , permission as p where m.menuid = mp.mid and p.id = mp.pid
+        and p.type = #{type} and mp.mptype='btn' and m.parentid = #{parentid}
+    </select>
+
+    <!--
+
+    -->
+    <select id="selectPermissionById" resultMap="MeMap">
+        select menuid from meun where title = #{title}
+    </select>
+    <resultMap id="MeMap" type="com.mahe.hitt.entity.Meun">
+        <id column="menuid" property="menuid"></id>
+    </resultMap>
+</mapper>

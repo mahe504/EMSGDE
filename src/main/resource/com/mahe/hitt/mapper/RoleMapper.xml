@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.mahe.hitt.mapper.RoleMapper">
+    <select id="selectRoleByUsername" resultType="com.mahe.hitt.entity.Role">
+        select r.* from role as r , `user` as u, user_role as ur
+        where u.uid = ur.uid and ur.rid = r.id and u.username = #{username}
+    </select>
+
+    <select id="selectRoleNameByUsername" resultType="String">
+        select r.rname from role as r , `user` as u, user_role as ur
+        where u.uid = ur.uid and ur.rid = r.id and u.username = #{username}
+    </select>
+</mapper>

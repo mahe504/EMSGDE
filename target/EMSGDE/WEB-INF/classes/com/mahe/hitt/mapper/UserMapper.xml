@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.mahe.hitt.mapper.UserMapper">
+
+    <!--
+        查询user
+       -->
+    <select id="selectUser" resultType="com.mahe.hitt.entity.povo.UserRolePOVO">
+        select u.* , r.rname from user as u , user_role as ur , role as r where u.uid = ur.uid and ur.rid = r.id and u.uid = #{uid}
+    </select>
+    <!--
+        根据uid修改user
+    -->
+    <update id="updateUser">
+        update user set email=#{email} , gender=#{gender} , ecode=#{ecode} , address=#{address} , phone=#{phone} where uid=#{uid}
+    </update>
+
+    <sql id="userSql">
+        <if test="realname != '' and realname != null">
+            <bind name="realnameItem" value="'%'+realname+'%'"/>
+            and realname like #{realnameItem}
+        </if>
+        <if test="dname != '' and dname != null">
+            <bind name="dnameItem" value="'%'+dname+'%'"/>
+            and dname like #{dnameItem}
+        </if>
+    </sql>
+
+    <resultMap id="userMap" type="com.mahe.hitt.entity.povo.UserDepartmentPovo">
+        <id property="uid" column="uid"></id>
+        <result property="email" column="email"></result>
+        <result property="dname" column="dname"></result>
+        <result property="gender" column="gender"></result>
+        <result property="address" column="address"></result>
+        <result property="username" column="username"></result>
+        <result property="realname" column="realname"></result>
+        <result property="password" column="password"></result>
+        <result property="birthday" column="birthday"></result>
+        <result property="createtime" column="createtime"></result>
+        <result property="phone" column="phone"></result>
+        <result property="ecode" column="ecode"></result>
+        <result property="status" column="status"></result>
+        <result property="wages" column="wnumber"></result>
+    </resultMap>
+    <!--
+       查询所有员工
+    -->
+    <select id="selectUserAll" resultMap="userMap">
+        select u.uid , username , email , status , ecode , phone , birthday , gender, createtime , dname,
+        realname , address , wnumber from user as u , wages as w , department as d
+        where u.wagesid = w.id and u.did = d.id and u.did !=0
+        <include refid="userSql"></include>
+        limit #{start} , #{end}
+    </select>
+
+    <!--
+        查询员工的数量
+    -->
+    <select id="selectUserAllCount" resultType="int">
+        select count(*) from user as u , wages as w , department as d
+        where u.wagesid = w.id and u.did = d.id and u.did !=0
+        <include refid="userSql"></include>
+    </select>
+
+    <!--
+        删除员工
+    -->
+    <delete id="deleteUserByUid">
+        delete from user where uid = #{uid}
+    </delete>
+
+    <delete id="deleteUserGroupByUid">
+        delete from user_group where uid = #{uid}
+    </delete>
+    <!--
+        查询部门
+    -->
+    <select id="userSelectDepartment" resultType="com.mahe.hitt.entity.Department">
+        select * from department
+    </select>
+
+    <!--
+        查询员工所在的部门
+    -->
+    <select id="selectUserIsDepartment" resultType="com.mahe.hitt.entity.User">
+        select * from user where uid = #{uid}
+    </select>
+
+    <!--
+        查询所在员工的数量
+    -->
+    <select id="selectDepartmentUserCount" resultType="int">
+        select count(*) from user where did = #{did}
+    </select>
+
+    <!--
+        修改员工所在的部门
+    -->
+    <update id="updateUserIsDepartment">
+        update user set did = #{did} where uid = #{uid}
+    </update>
+
+    <!--
+        是否存在用户名
+    -->
+    <select id="selectUserByUsername" resultType="com.mahe.hitt.entity.User">
+        select * from user where username = #{username}
+    </select>
+
+    <!--
+        添加员工
+    -->
+    <insert id="insertUser">
+        insert into user(
+            uid,email,username,password,gender,birthday,address,phone,ecode,status,createtime,realname,did,wagesid
+        )values(
+            #{uid},#{email},#{username},#{password},#{gender},#{birthday},#{address},
+            #{phone},#{ecode},#{status},#{createtime},#{realname},#{did},5
+        )
+    </insert>
+
+    <!--
+        修改密码
+    -->
+    <update id="updatePassword">
+        update user set password = #{passwordSalt} where uid = #{uid}
+    </update>
+
+    <!--
+        添加职位
+    -->
+    <insert id="insertUserAsGroup">
+        insert into user_group(uid , gid) values(#{uid} , 3)
+    </insert>
+</mapper>

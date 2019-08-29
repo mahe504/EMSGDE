@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.mahe.hitt.mapper.LoginMapper">
+    <!--
+        插入数据
+    -->
+    <insert id="insertLoginLog">
+        insert into loginlog(id , logusername , lastlogtime , logip) values(
+        #{id} , #{logusername} , #{lastlogtime} , #{logip}
+        )
+    </insert>
+    <!--
+        通过username 修改最后登录的ip和时间
+    -->
+    <update id="updateLoginLogByUsername">
+        update loginlog set lastlogtime=#{lastlogtime} , logip=#{logip} where logusername=#{logusername}
+    </update>
+    <!--
+        用户登录的SQL根据用户名和密码查询
+    -->
+    <select id="selectUserByUsername" resultType="com.mahe.hitt.entity.User">
+        select * from user where username=#{username}
+    </select>
+    <!--
+        通过username查找有无登录的记录
+    -->
+    <select id="selectLoginlogByUsername" resultType="com.mahe.hitt.entity.Loginlog">
+        select * from loginlog where logusername = #{logusername}
+    </select>
+</mapper>

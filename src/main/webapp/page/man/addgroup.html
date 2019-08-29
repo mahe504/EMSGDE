@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>添加角色页面</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="Access-Control-Allow-Origin" content="*">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <script src="../../static/path.js"></script>
+    <meta name="format-detection" content="telephone=no">
+    <script src="../../static/jquery-1.8.2.min.js"></script>
+    <link rel="stylesheet" href="../../layui/css/layui.css" media="all"/>
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_tnyc012u2rlwstt9.css" media="all"/>
+    <script src="../../layui/layui.js"></script>
+</head>
+<body>
+<script type="text/html" id="toolBar">
+    <div class="layui-btn-container">
+        <a class="layui-btn layui-btn-sm layui-btn-danger" id="add{{d.id}}" lay-event="add">赋予</a>
+    </div>
+</script>
+<table id="add" lay-filter="add"></table>
+</body>
+<script type="text/javascript">
+    layui.config({//基础目录
+        base: getRootPath() + '/static/common/js/'//定义基目录
+    }).extend({
+        $tool: 'tool',
+        $api: 'api',
+        ajaxAOP: 'ajaxAOP',
+    }).use(['form', 'layer', '$tool', '$api', 'ajaxAOP', 'table', 'laypage', 'jquery', 'element'], function () {
+        var form = layui.form,
+            layer = parent.layer === 'undenfined' ? layui.layer : parent.layer,
+            $tool = layui.$tool,
+            $api = layui.$api,
+            ajaxAOP = layui.ajaxAOP,
+            table = layui.table,
+            pageNum = 0,
+            dataLength = 0,
+            laypage = layui.laypage,
+            jquery = layui.jquery,
+            element = layui.element;
+
+
+        function getURLParams(param) {
+            layer.load(2);
+            var params = $tool.getQueryParam();
+            return params[param];
+        }
+
+        var oldId = getURLParams("id");
+        var tableIns = table.render({
+            elem: '#add',
+            height: '390',
+            url: getRootPath() + "/man/selectManagerAllUserNoGroup.action?id=" + getURLParams("id"),
+            limit: 5,
+            totalRow: true,
+            limits: [5, 10, 15, 20, 25, 30],
+            page: {
+                prev: '上一页',
+                next: '下一页',
+                layout: ['prev', 'page', 'next', 'limit', 'count', 'refresh', 'skip']
+            }
+            , title: '角色列表'
+            , autoSort: false
+            , page: true
+            , cols: [[
+                {field: 'uid', title: 'ID', width: '20%'}
+                , {field: 'username', title: '用户名'}
+                , {field: 'dname', title: '部门名称',}
+                , {field: 'gname', title: '职位'}
+                , {field: 'realname', title: '真实姓名'}
+                , {fixed: 'right', title: '操作', align: 'center', width: '14%', toolbar: '#toolBar'}
+            ]],
+            done: function (res, curr, count) {
+                layer.closeAll("loading");
+                var brforeCurr = curr; // 获得当前页码
+                var dataLength = res.data.length; // 获得当前页的记录数
+                var count = res.count; // 获得总记录数
+                if (dataLength == 0 && count != 0) { //如果当前页的记录数为0并且总记录数不为0
+                    table.reload("add", { // 刷新表格到上一页
+                        page: {
+                            curr: brforeCurr - 1
+                        }
+                    });
+                }
+            }
+        });
+        table.on('tool(add)', function (obj) {
+            switch (obj.event) {
+                case 'add':
+                    addGroup(obj.data);
+                    break;
+            }
+        });
+
+        function addGroup(data) {
+            var req = {
+                'gid': oldId,
+                'uid': data.uid,
+            }
+            $api.doPost(getRootPath() + '/man/updateGroupById.action', req, function (res) {
+                if (res.data) {
+                    layer.msg('修改成功', {time: 1000} , function(){
+                        tableIns.reload();
+                    });
+
+                }else{
+                    layer.msg('修改失败', {time: 1000});
+                }
+            })
+        }
+    });
+</script>
+</html>
