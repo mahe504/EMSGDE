@@ -18,7 +18,7 @@
         <webVersion>2.5</webVersion>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <junit.version>4.12</junit.version>
-        <commons-io.version>2.4</commons-io.version>
+        <commons-io.version>2.7</commons-io.version>
         <javaee-api.version>5.0-1</javaee-api.version>
         <javax.servlet.jsp.version>2.1</javax.servlet.jsp.version>
         <javax.servlet.jsp.jstl.version>1.2.4</javax.servlet.jsp.jstl.version>
